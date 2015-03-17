@@ -1,5 +1,11 @@
 package org.pdfbox.extension;
 
+/*
+ * XFA-PDF Parser
+ * 
+ * By Enrico Anello
+ */
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
