@@ -187,17 +187,14 @@ private FileInputStream file;
 	}
 	
 	private Document getDocument() throws IOException, ParserConfigurationException, SAXException {
-		
 		PDDocument document = PDDocument.load(file);
 		file.close();
-        document.setAllSecurityToBeRemoved(true);
-        PDAcroForm form = document.getDocumentCatalog().getAcroForm();
-        Document documentXML = form.getXFA().getDocument();
-        
-        documentXML.getDocumentElement().normalize();
-        document.close();
-        return documentXML;
-		
+		document.setAllSecurityToBeRemoved(true);
+		PDAcroForm form = document.getDocumentCatalog().getAcroForm();
+		Document documentXML = form.getXFA().getDocument();        
+		documentXML.getDocumentElement().normalize();
+		document.close();
+		return documentXML;
 	}
 	
 	private void iterateDom(NodeList dom) {
