@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -35,6 +38,9 @@ private FileInputStream file;
 	
 	private Subform parsedSubForms = new Subform();
 	
+	private List<Field> fields = new ArrayList<Field>();
+	private List<Subform> subforms = new ArrayList<Subform>();
+		
 	public XFA_Parser(String source) throws FileNotFoundException {
 		file = new FileInputStream(source);
 	}
@@ -45,12 +51,139 @@ private FileInputStream file;
 			NodeList nodeListForm = this.domDocument.getElementsByTagName("form").item(0).getChildNodes();
 			
 			this.iterateDom(nodeListForm);
-			this.printTree(parsedSubForms);
-			System.out.println("Break!");
+			//this.printTree(parsedSubForms);
 		} catch (IOException | ParserConfigurationException | SAXException e) {
 			e.printStackTrace();
 		}
-
+	}
+	
+	public Subform getTree() {
+		return this.parsedSubForms;
+	}
+	
+	public void printTree(Subform sf) {
+		this.printTree(sf, 0);
+	}
+	
+	public void printTree() {
+		this.printTree(this.parsedSubForms, 0);
+	}
+	
+	public List<Field> getFieldById(String id) {		
+		if (this.parsedSubForms.getFields() != null && this.parsedSubForms.getFields().size() > 0) {
+			for (Field f : this.parsedSubForms.getFields()) {
+				if (f.getName().equals(id)) {
+					this.fields.add(f);
+				}
+			}
+		}
+		this.iterateFields(id, this.parsedSubForms.getSubform());
+		return this.fields;
+	}
+	
+	public List<Subform> getSubFormById(String id) {
+		if (this.parsedSubForms.getName().equals(id)) {
+			this.subforms.add(this.parsedSubForms);
+		}
+		if (this.parsedSubForms.getSubform() != null && this.parsedSubForms.getSubform().size() > 0) {
+			this.iterateSubForms(id, this.parsedSubForms.getSubform());
+		}
+		return this.subforms;
+	}
+	
+	public Field getFieldByXPath(String path) {
+		List<Map<String, Integer>> sp = this.builPathMap(path);
+		String[] split = path.split("/");
+		String newPath = "";
+		for (int i = 0; i < split.length - 1; i++) {
+			newPath += split[i] + "/";
+		}
+		newPath = newPath.substring(0, newPath.length()-1);
+		
+		Subform sf = this.getSubformByXPath(newPath);
+		
+		String name = "";
+		Integer index = 1;
+		for (String key : sp.get(sp.size() - 1).keySet()) {
+			name = key;
+			index = sp.get(sp.size() - 1).get(key);
+		}
+		
+		Integer counter = 0;
+		for (Field fld : sf.getFields()) {
+			if (fld.getName().equals(name)) {
+				counter = counter + 1;
+				if (counter == index) {
+					return fld;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	public Subform getSubformByXPath(String path) {
+		List<Map<String, Integer>> sp = this.builPathMap(path);
+		
+		List<Subform> current = this.parsedSubForms.getSubform();
+		Subform lastSf = new Subform();
+		for (int i = 0; i < sp.size(); i++) {
+			String name = "";
+			Integer index = 1;
+			for (String key : sp.get(i).keySet()) {
+				name = key;
+				index = sp.get(i).get(key);
+			}
+			int counter = 0;
+			boolean found = false;
+			for (Subform cur : current) {
+				if (cur.getName().equals(name)) {
+					counter = counter + 1;
+					if (counter == index) {
+						current = cur.getSubform();
+						lastSf = cur;
+						found = true;
+						break;
+					}
+				}
+			}
+			if (!found) {
+				return null;
+			}
+		}
+		return lastSf;
+	}
+	
+	private void iterateSubForms(String id, List<Subform> current) {
+		if (current.size() > 0) {
+			for (Subform sf : current) {
+				if (sf.getName() != null) {
+					if (sf.getName().equals(id)) {
+						this.subforms.add(sf);
+					}
+				}
+				if (sf.getSubform() != null && sf.getSubform().size() > 0) {
+					this.iterateSubForms(id, sf.getSubform());
+				}
+			}
+		}
+	}
+	
+	private void iterateFields(String id, List<Subform> current) {
+		for (Subform sf : current) {
+			if (sf.getFields() != null && sf.getFields().size() > 0) {
+				for (Field f : sf.getFields()) {
+					if (f.getName() != null) {
+						if (f.getName().equals(id)) {
+							this.fields.add(f);
+						}
+					}
+				}
+			}
+			if (sf.getSubform() != null && sf.getSubform().size() > 0) {
+				this.iterateFields(id, sf.getSubform());
+			}
+		}
 	}
 	
 	private Document getDocument() throws IOException, ParserConfigurationException, SAXException {
@@ -62,7 +195,7 @@ private FileInputStream file;
         Document documentXML = form.getXFA().getDocument();
         
         documentXML.getDocumentElement().normalize();
-        
+        document.close();
         return documentXML;
 		
 	}
@@ -132,9 +265,6 @@ private FileInputStream file;
 			Field field = new Field();
 			Node node = itemData.item(i);
 			field.setName(node.getNodeName());
-			if (node.getNodeName().equalsIgnoreCase("q11Table")) {
-				System.out.println("DD");
-			}
 			if (node.getFirstChild() != null) {
 				field.setValue(node.getFirstChild().getNodeValue());
 			}
@@ -170,18 +300,6 @@ private FileInputStream file;
 		return subforms;
 	}
 	
-	private List<String> getSubFormNames(NodeList dom) {
-		List<String> subforms = new ArrayList<String>();
-		for (int i = 0; i < dom.getLength(); i++) {
-			String nodeName = dom.item(i).getNodeName();
-			if (nodeName.equalsIgnoreCase("subform")) {
-				String nodeAttr = this.getNameAttributeFromNode(dom.item(i));
-				subforms.add(nodeAttr);
-			}
-		}
-		return subforms;
-	}
-	
 	private String getNameAttributeFromNode(Node node) {
 		NamedNodeMap attributes = node.getAttributes();
 		if (attributes != null) {
@@ -201,11 +319,27 @@ private FileInputStream file;
 		}
 	}
 	
-	public void printTree(Subform sf) {
-		this.printTree(sf, 0);
+	private List<Map<String, Integer>> builPathMap(String path) {
+		String[] split = path.split("/");
+		
+		List<Map<String, Integer>> sp = new ArrayList<Map<String, Integer>>();
+			
+		Pattern r = Pattern.compile("\\[(.*?)\\]");
+		for (String s : split) {
+			Map<String, Integer> current = new HashMap<String, Integer>();
+			Matcher m = r.matcher(s);
+			if (m.find()) {
+				current.put(s.replaceAll("\\[(.*?)\\]", "").trim(), Integer.parseInt(m.group(1)));
+			} else {
+				current.put(s.trim(), 1);
+			}
+			sp.add(current);
+		}
+		
+		return sp;
 	}
 	
-	public void printTree(Subform sf, int row) {
+	private void printTree(Subform sf, int row) {
 		String sep = StringUtils.repeat("-", row);
 		System.out.println(sep + " " + sf.getName());
 		if (sf.getSubform().size() > 0) {
