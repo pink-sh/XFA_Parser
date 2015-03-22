@@ -1,11 +1,9 @@
 package org.pdfbox.extension.test;
 
 import java.io.FileNotFoundException;
-import java.util.List;
 
 import org.pdfbox.extension.XFA_Parser;
 import org.pdfbox.extension.objects.Field;
-import org.pdfbox.extension.objects.Subform;
 
 public class Test {
 	private static String INPUT = "/Users/enrico/Work/git/XFA_Parser/XFA_Parser/src/main/resources/files/CGRFA_dynamic_150312_filled.pdf";
