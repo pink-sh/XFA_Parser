@@ -3,6 +3,15 @@
   <groupId>com.github.pink-sh</groupId>
   <artifactId>XFA_Parser</artifactId>
   <version>0.5.1</version>
+  <description>XFA-PDF Parser</description>
+  <packaging>jar</packaging>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
   <dependencies>
    <dependency>
 	    <groupId>org.apache.pdfbox</groupId>
