@@ -169,10 +169,8 @@ private FileInputStream file;
 		Subform sf = this.getSubformByXPath(newPath);
 		
 		String name = "";
-		int index = 1;
 		for (String key : sp.get(sp.size()-1).keySet()) {
 			name = key;
-			index = sp.get(sp.size()-1).get(key);
 		}
 		
 		int counter = 0;
