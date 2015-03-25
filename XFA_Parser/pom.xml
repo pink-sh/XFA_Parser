@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.pink-sh</groupId>
   <artifactId>XFA_Parser</artifactId>
-  <version>0.5.1</version>
+  <version>0.5.2</version>
   <description>XFA-PDF Parser</description>
   <packaging>jar</packaging>
   <licenses>

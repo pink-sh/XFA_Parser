@@ -263,7 +263,22 @@ private FileInputStream file;
 			Node node = itemData.item(i);
 			field.setName(node.getNodeName());
 			if (node.getFirstChild() != null) {
-				field.setValue(node.getFirstChild().getNodeValue());
+				String value = "";
+				if (node.getFirstChild().getNodeName().equalsIgnoreCase("CheckBox")) {
+					for (int x = 0; x < node.getChildNodes().getLength(); x++) {
+						value = value + node.getChildNodes().item(x).getFirstChild().getNodeValue().replace(",", "\\,") + ",";
+					}
+					value = value.replaceAll("(,)*$", "");
+				}
+				else if (node.getFirstChild().getNodeName().equalsIgnoreCase("value")) {
+					for (int x = 0; x < node.getChildNodes().getLength(); x++) {
+						value = value + node.getChildNodes().item(x).getFirstChild().getNodeValue().replace(",", "\\,") + ",";
+					}
+					value = value.replaceAll("(,)*$", "");
+				} else {
+					value = node.getFirstChild().getNodeValue();
+				}
+				field.setValue(value);
 			}
 			fields.add(field);
 		}
