@@ -154,6 +154,38 @@ private FileInputStream file;
 		return lastSf;
 	}
 	
+	public int getNumberOfItemsByXPath(String path) {
+		List<Map<String, Integer>> sp = this.builPathMap(path);
+		String newPath = "";
+		for (int i = 0; i < sp.size() - 1; i++) {
+			String name = "";
+			int index = 1;
+			for (String key : sp.get(i).keySet()) {
+				name = key;
+				index = sp.get(i).get(key);
+			}
+			newPath = newPath + name + "[" + Integer.toString(index) + "]" + "/";
+		}
+		Subform sf = this.getSubformByXPath(newPath);
+		
+		String name = "";
+		int index = 1;
+		for (String key : sp.get(sp.size()-1).keySet()) {
+			name = key;
+			index = sp.get(sp.size()-1).get(key);
+		}
+		
+		int counter = 0;
+		List<Field> listField = sf.getFields();
+		for (Field f : listField) {
+			if (f.getName().equals(name)) {
+				counter = counter + 1;
+			}
+		}
+	
+		return counter;
+	}
+	
 	private void iterateSubForms(String id, List<Subform> current) {
 		if (current.size() > 0) {
 			for (Subform sf : current) {
@@ -332,6 +364,9 @@ private FileInputStream file;
 	}
 	
 	private List<Map<String, Integer>> builPathMap(String path) {
+		if (path.startsWith("/")) {
+		    path = path.substring(1, path.length());
+		}
 		String[] split = path.split("/");
 		
 		List<Map<String, Integer>> sp = new ArrayList<Map<String, Integer>>();
