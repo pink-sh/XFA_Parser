@@ -102,6 +102,8 @@ private FileInputStream file;
 		
 		Subform sf = this.getSubformByXPath(newPath);
 		
+		if (sf == null) { return null; }
+		
 		String name = "";
 		Integer index = 1;
 		for (String key : sp.get(sp.size() - 1).keySet()) {
@@ -167,6 +169,7 @@ private FileInputStream file;
 			newPath = newPath + name + "[" + Integer.toString(index) + "]" + "/";
 		}
 		Subform sf = this.getSubformByXPath(newPath);
+		if (sf == null) { return 0; }
 		
 		String name = "";
 		for (String key : sp.get(sp.size()-1).keySet()) {
@@ -174,13 +177,14 @@ private FileInputStream file;
 		}
 		
 		int counter = 0;
-		List<Field> listField = sf.getFields();
-		for (Field f : listField) {
-			if (f.getName().equals(name)) {
-				counter = counter + 1;
+		if (sf.getFields() != null && sf.getFields().size() > 0) {
+			List<Field> listField = sf.getFields();
+			for (Field f : listField) {
+				if (f.getName().equals(name)) {
+					counter = counter + 1;
+				}
 			}
 		}
-	
 		return counter;
 	}
 	
@@ -296,17 +300,35 @@ private FileInputStream file;
 				String value = "";
 				if (node.getFirstChild().getNodeName().equalsIgnoreCase("CheckBox")) {
 					for (int x = 0; x < node.getChildNodes().getLength(); x++) {
-						value = value + node.getChildNodes().item(x).getFirstChild().getNodeValue().replace(",", "\\,") + ",";
+						if (node.getChildNodes().item(x).getNodeName().equalsIgnoreCase("CheckBox")) {
+							value = value + node.getChildNodes().item(x).getFirstChild().getNodeValue().replace(",", "\\,") + ",";
+						} else {
+							Field s = new Field();
+							s.setName(node.getChildNodes().item(x).getFirstChild().getNodeName());
+							s.setValue(node.getChildNodes().item(x).getFirstChild().getNodeValue());
+							fields.add(s);
+						}
 					}
 					value = value.replaceAll("(,)*$", "");
 				}
 				else if (node.getFirstChild().getNodeName().equalsIgnoreCase("value")) {
 					for (int x = 0; x < node.getChildNodes().getLength(); x++) {
-						value = value + node.getChildNodes().item(x).getFirstChild().getNodeValue().replace(",", "\\,") + ",";
+						//value = value + node.getChildNodes().item(x).getNodeValue().replace(",", "\\,") + ",";
+						if (node.getChildNodes().item(x).getNodeName().equalsIgnoreCase("value")) {
+							value = value + node.getChildNodes().item(x).getFirstChild().getNodeValue().replace(",", "\\,") + ",";
+						} else {
+							Field s = new Field();
+							s.setName(node.getChildNodes().item(x).getFirstChild().getNodeName());
+							s.setValue(node.getChildNodes().item(x).getFirstChild().getNodeValue());
+							fields.add(s);
+						}
 					}
 					value = value.replaceAll("(,)*$", "");
 				} else {
 					value = node.getFirstChild().getNodeValue();
+					if (value == null && node.getFirstChild().getFirstChild() != null) {
+						value = node.getFirstChild().getFirstChild().getNodeValue();
+					}
 				}
 				field.setValue(value);
 			}
