@@ -304,8 +304,13 @@ private FileInputStream file;
 							value = value + node.getChildNodes().item(x).getFirstChild().getNodeValue().replace(",", "\\,") + ",";
 						} else {
 							Field s = new Field();
-							s.setName(node.getChildNodes().item(x).getFirstChild().getNodeName());
-							s.setValue(node.getChildNodes().item(x).getFirstChild().getNodeValue());
+							if (node.getChildNodes().item(x).getFirstChild() != null) {
+								s.setName(node.getChildNodes().item(x).getFirstChild().getNodeName());
+								s.setValue(node.getChildNodes().item(x).getFirstChild().getNodeValue());
+							} else if (node.getChildNodes().item(x).getNodeName() != null) {
+								s.setName(node.getChildNodes().item(x).getNodeName());
+								s.setValue(node.getChildNodes().item(x).getNodeValue());
+							}
 							fields.add(s);
 						}
 					}
