@@ -2,14 +2,14 @@ package org.pdfbox.extension.objects;
 
 import java.util.List;
 
-public class Subform {
+public class XFASubform {
 	private String name;
 	private Integer index;
-	private List<Subform> subform;
-	private List<Field> fields;
+	private List<XFASubform> subform;
+	private List<XFAField> fields;
 	
-	public Subform() {}
-	public Subform(Subform sf){
+	public XFASubform() {}
+	public XFASubform(XFASubform sf){
 		this.setFields(sf.getFields());
 		this.setIndex(sf.getIndex());
 		this.setName(sf.getName());
@@ -28,16 +28,16 @@ public class Subform {
 	public void setIndex(Integer index) {
 		this.index = index;
 	}
-	public List<Subform> getSubform() {
+	public List<XFASubform> getSubform() {
 		return subform;
 	}
-	public void setSubform(List<Subform> subform) {
+	public void setSubform(List<XFASubform> subform) {
 		this.subform = subform;
 	}
-	public List<Field> getFields() {
+	public List<XFAField> getFields() {
 		return fields;
 	}
-	public void setFields(List<Field> fields) {
+	public void setFields(List<XFAField> fields) {
 		this.fields = fields;
 	}
 

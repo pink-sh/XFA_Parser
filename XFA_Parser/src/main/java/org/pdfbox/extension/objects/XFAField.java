@@ -1,6 +1,6 @@
 package org.pdfbox.extension.objects;
 
-public class Field {
+public class XFAField {
 	private String name;
 	private String value;
 	public String getName() {

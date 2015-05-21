@@ -21,8 +21,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.pdfbox.extension.objects.Field;
-import org.pdfbox.extension.objects.Subform;
+import org.pdfbox.extension.objects.XFAField;
+import org.pdfbox.extension.objects.XFASubform;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -36,10 +36,10 @@ private FileInputStream file;
 	private Document domDocument;
 	private List<HashMap<String, Integer>> currentSubFormsIndexes = new ArrayList<HashMap<String, Integer>>();
 	
-	private Subform parsedSubForms = new Subform();
+	private XFASubform parsedSubForms = new XFASubform();
 	
-	private List<Field> fields = new ArrayList<Field>();
-	private List<Subform> subforms = new ArrayList<Subform>();
+	private List<XFAField> fields = new ArrayList<XFAField>();
+	private List<XFASubform> subforms = new ArrayList<XFASubform>();
 		
 	public XFA_Parser(String source) throws FileNotFoundException {
 		file = new FileInputStream(source);
@@ -57,11 +57,11 @@ private FileInputStream file;
 		}
 	}
 	
-	public Subform getTree() {
+	public XFASubform getTree() {
 		return this.parsedSubForms;
 	}
 	
-	public void printTree(Subform sf) {
+	public void printTree(XFASubform sf) {
 		this.printTree(sf, 0);
 	}
 	
@@ -69,9 +69,9 @@ private FileInputStream file;
 		this.printTree(this.parsedSubForms, 0);
 	}
 	
-	public List<Field> getFieldById(String id) {		
+	public List<XFAField> getFieldById(String id) {		
 		if (this.parsedSubForms.getFields() != null && this.parsedSubForms.getFields().size() > 0) {
-			for (Field f : this.parsedSubForms.getFields()) {
+			for (XFAField f : this.parsedSubForms.getFields()) {
 				if (f.getName().equals(id)) {
 					this.fields.add(f);
 				}
@@ -81,7 +81,7 @@ private FileInputStream file;
 		return this.fields;
 	}
 	
-	public List<Subform> getSubFormById(String id) {
+	public List<XFASubform> getSubFormById(String id) {
 		if (this.parsedSubForms.getName().equals(id)) {
 			this.subforms.add(this.parsedSubForms);
 		}
@@ -91,7 +91,7 @@ private FileInputStream file;
 		return this.subforms;
 	}
 	
-	public Field getFieldByXPath(String path) {
+	public XFAField getFieldByXPath(String path) {
 		List<Map<String, Integer>> sp = this.builPathMap(path);
 		String[] split = path.split("/");
 		String newPath = "";
@@ -100,7 +100,7 @@ private FileInputStream file;
 		}
 		newPath = newPath.substring(0, newPath.length()-1);
 		
-		Subform sf = this.getSubformByXPath(newPath);
+		XFASubform sf = this.getSubformByXPath(newPath);
 		
 		if (sf == null) { return null; }
 		
@@ -112,7 +112,7 @@ private FileInputStream file;
 		}
 		
 		Integer counter = 0;
-		for (Field fld : sf.getFields()) {
+		for (XFAField fld : sf.getFields()) {
 			if (fld.getName().equals(name)) {
 				counter = counter + 1;
 				if (counter == index) {
@@ -124,11 +124,11 @@ private FileInputStream file;
 		return null;
 	}
 	
-	public Subform getSubformByXPath(String path) {
+	public XFASubform getSubformByXPath(String path) {
 		List<Map<String, Integer>> sp = this.builPathMap(path);
 		
-		List<Subform> current = this.parsedSubForms.getSubform();
-		Subform lastSf = new Subform();
+		List<XFASubform> current = this.parsedSubForms.getSubform();
+		XFASubform lastSf = new XFASubform();
 		for (int i = 0; i < sp.size(); i++) {
 			String name = "";
 			Integer index = 1;
@@ -138,7 +138,7 @@ private FileInputStream file;
 			}
 			int counter = 0;
 			boolean found = false;
-			for (Subform cur : current) {
+			for (XFASubform cur : current) {
 				if (cur.getName().equals(name)) {
 					counter = counter + 1;
 					if (counter == index) {
@@ -168,7 +168,7 @@ private FileInputStream file;
 			}
 			newPath = newPath + name + "[" + Integer.toString(index) + "]" + "/";
 		}
-		Subform sf = this.getSubformByXPath(newPath);
+		XFASubform sf = this.getSubformByXPath(newPath);
 		if (sf == null) { return 0; }
 		
 		String name = "";
@@ -178,8 +178,8 @@ private FileInputStream file;
 		
 		int counter = 0;
 		if (sf.getFields() != null && sf.getFields().size() > 0) {
-			List<Field> listField = sf.getFields();
-			for (Field f : listField) {
+			List<XFAField> listField = sf.getFields();
+			for (XFAField f : listField) {
 				if (f.getName().equals(name)) {
 					counter = counter + 1;
 				}
@@ -188,9 +188,9 @@ private FileInputStream file;
 		return counter;
 	}
 	
-	private void iterateSubForms(String id, List<Subform> current) {
+	private void iterateSubForms(String id, List<XFASubform> current) {
 		if (current.size() > 0) {
-			for (Subform sf : current) {
+			for (XFASubform sf : current) {
 				if (sf.getName() != null) {
 					if (sf.getName().equals(id)) {
 						this.subforms.add(sf);
@@ -203,10 +203,10 @@ private FileInputStream file;
 		}
 	}
 	
-	private void iterateFields(String id, List<Subform> current) {
-		for (Subform sf : current) {
+	private void iterateFields(String id, List<XFASubform> current) {
+		for (XFASubform sf : current) {
 			if (sf.getFields() != null && sf.getFields().size() > 0) {
-				for (Field f : sf.getFields()) {
+				for (XFAField f : sf.getFields()) {
 					if (f.getName() != null) {
 						if (f.getName().equals(id)) {
 							this.fields.add(f);
@@ -246,8 +246,8 @@ private FileInputStream file;
 		this.parsedSubForms = this.iterateFields(this.parsedSubForms);
 	}
 	
-	private Subform iterateFields (Subform subform) {
-		Subform original = this.clone(subform);
+	private XFASubform iterateFields (XFASubform subform) {
+		XFASubform original = this.clone(subform);
 		if (this.currentSubFormsIndexes.size() < 1) {
 			HashMap<String, Integer> hm = new HashMap<String, Integer>();
 			hm.put(original.getName(), original.getIndex());
@@ -257,15 +257,15 @@ private FileInputStream file;
 		return this.iterateFields(subform, original);
 	}
 	
-	private Subform iterateFields(Subform subForm, Subform original) {
+	private XFASubform iterateFields(XFASubform subForm, XFASubform original) {
 		if (this.currentSubFormsIndexes.size() < 1) {
 			HashMap<String, Integer> hm = new HashMap<String, Integer>();
 			hm.put(original.getName(), original.getIndex());
 			this.currentSubFormsIndexes.add(hm);
 		}
-		original.setSubform(new ArrayList<Subform>());
-		List<Subform> listSf = new ArrayList<Subform>();
-		for (Subform sf : subForm.getSubform()) {
+		original.setSubform(new ArrayList<XFASubform>());
+		List<XFASubform> listSf = new ArrayList<XFASubform>();
+		for (XFASubform sf : subForm.getSubform()) {
 			HashMap<String, Integer> hm = new HashMap<String, Integer>();
 			hm.put(sf.getName(), sf.getIndex());
 			this.currentSubFormsIndexes.add(hm);
@@ -278,7 +278,7 @@ private FileInputStream file;
 		return original;
 	}
 	
-	private List<Field> getFields(List<HashMap<String, Integer>> bredCrumbs) {
+	private List<XFAField> getFields(List<HashMap<String, Integer>> bredCrumbs) {
 		NodeList rootData = this.domDocument.getElementsByTagName("xfa:data").item(0).getChildNodes();		
 		NodeList itemData = rootData;
 		for (HashMap<String, Integer> bc : bredCrumbs) {
@@ -302,9 +302,9 @@ private FileInputStream file;
 			}
 		}
 		
-		List<Field> fields = new ArrayList<Field>();
+		List<XFAField> fields = new ArrayList<XFAField>();
 		for (int i = 0; i < itemData.getLength(); i++) {
-			Field field = new Field();
+			XFAField field = new XFAField();
 			Node node = itemData.item(i);
 			field.setName(node.getNodeName());
 			if (node.getFirstChild() != null) {
@@ -314,7 +314,7 @@ private FileInputStream file;
 						if (node.getChildNodes().item(x).getNodeName().equalsIgnoreCase("CheckBox")) {
 							value = value + node.getChildNodes().item(x).getFirstChild().getNodeValue().replace(",", "\\,") + ",";
 						} else {
-							Field s = new Field();
+							XFAField s = new XFAField();
 							if (node.getChildNodes().item(x).getFirstChild() != null) {
 								s.setName(node.getChildNodes().item(x).getFirstChild().getNodeName());
 								s.setValue(node.getChildNodes().item(x).getFirstChild().getNodeValue());
@@ -333,7 +333,7 @@ private FileInputStream file;
 						if (node.getChildNodes().item(x).getNodeName().equalsIgnoreCase("value")) {
 							value = value + node.getChildNodes().item(x).getFirstChild().getNodeValue().replace(",", "\\,") + ",";
 						} else {
-							Field s = new Field();
+							XFAField s = new XFAField();
 							s.setName(node.getChildNodes().item(x).getFirstChild().getNodeName());
 							s.setValue(node.getChildNodes().item(x).getFirstChild().getNodeValue());
 							fields.add(s);
@@ -353,14 +353,14 @@ private FileInputStream file;
 		return fields;
 	}
 	
-	private List<Subform> iterateSubForm(NodeList dom, int iterations) {
-		List<Subform> subforms = new ArrayList<Subform>();
+	private List<XFASubform> iterateSubForm(NodeList dom, int iterations) {
+		List<XFASubform> subforms = new ArrayList<XFASubform>();
 		
 		for (int i = 0; i < dom.getLength(); i++) {
 			String nodeName = dom.item(i).getNodeName();
 			
 			if (nodeName.equalsIgnoreCase("subform")) {
-				Subform current = new Subform();
+				XFASubform current = new XFASubform();
 				String nodeAttr = this.getNameAttributeFromNode(dom.item(i));
 				current.setName(nodeAttr);
 				current.setSubform(this.iterateSubForm(dom.item(i).getChildNodes(), iterations+1));
@@ -371,7 +371,7 @@ private FileInputStream file;
 		for (int i = 0; i < subforms.size(); i++) {
 			for (int j = 0; j < i; j++) {
 				if (subforms.get(j).getName().equals(subforms.get(i).getName())) {
-					Subform temp = this.clone(subforms.get(i));
+					XFASubform temp = this.clone(subforms.get(i));
 					temp.setIndex(subforms.get(j).getIndex() + 1);
 					subforms.set(i, temp);
 				}
@@ -422,18 +422,18 @@ private FileInputStream file;
 		return sp;
 	}
 	
-	private void printTree(Subform sf, int row) {
+	private void printTree(XFASubform sf, int row) {
 		String sep = StringUtils.repeat("-", row);
 		System.out.println(sep + " " + sf.getName());
 		if (sf.getSubform().size() > 0) {
-			for (Subform sf1 : sf.getSubform()) {
+			for (XFASubform sf1 : sf.getSubform()) {
 				this.printTree(sf1, row + 1);
 			}
 		}
 	}
 	
-	private Subform clone(Subform sf) {
-		return new Subform(sf);
+	private XFASubform clone(XFASubform sf) {
+		return new XFASubform(sf);
 	}
 
 }
