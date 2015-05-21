@@ -243,7 +243,18 @@ private FileInputStream file;
 				index = index + 1;
 			}
 		}
-		this.parsedSubForms = this.iterateFields(this.parsedSubForms, this.clone(this.parsedSubForms));
+		this.parsedSubForms = this.iterateFields(this.parsedSubForms);
+	}
+	
+	private Subform iterateFields (Subform subform) {
+		Subform original = this.clone(subform);
+		if (this.currentSubFormsIndexes.size() < 1) {
+			HashMap<String, Integer> hm = new HashMap<String, Integer>();
+			hm.put(original.getName(), original.getIndex());
+			this.currentSubFormsIndexes.add(hm);
+		}
+		original.setFields(this.getFields(this.currentSubFormsIndexes));
+		return this.iterateFields(subform, original);
 	}
 	
 	private Subform iterateFields(Subform subForm, Subform original) {
